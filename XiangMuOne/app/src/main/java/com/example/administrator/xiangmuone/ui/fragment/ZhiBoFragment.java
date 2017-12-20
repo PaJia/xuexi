@@ -2,7 +2,10 @@ package com.example.administrator.xiangmuone.ui.fragment;
 
 
 import android.os.Bundle;
+import android.support.design.widget.TabLayout;
 import android.support.v4.app.Fragment;
+import android.support.v4.app.FragmentManager;
+import android.support.v4.view.ViewPager;
 import android.view.View;
 import android.widget.CheckBox;
 import android.widget.CompoundButton;
@@ -16,8 +19,10 @@ import com.example.administrator.xiangmuone.bean.Xmzb_ZbBean;
 import com.example.administrator.xiangmuone.net.NetContract;
 import com.example.administrator.xiangmuone.net.NetModel;
 import com.example.administrator.xiangmuone.net.NetPresenter;
+import com.example.administrator.xiangmuone.ui.adapter.PagerAdapter;
 import com.google.gson.Gson;
 
+import java.util.ArrayList;
 import java.util.List;
 
 /**
@@ -25,8 +30,14 @@ import java.util.List;
  */
 public class ZhiBoFragment extends BaseFragment<NetPresenter, NetModel> implements NetContract.View {
     private ImageView mImageView;
-    private TextView mTextView,mXy;
+    private TextView mTextView, mXy;
     private CheckBox checkBox;
+    private ArrayList<String> list = new ArrayList<>();
+    private ArrayList<Fragment> mlist = new ArrayList<>();
+    private TabLayout tabLayout1;
+    private ViewPager pager1;
+    private FragmentManager fragmentManager;
+    private boolean boo = true;
 
     @Override
     protected void initView(View view) {
@@ -36,10 +47,18 @@ public class ZhiBoFragment extends BaseFragment<NetPresenter, NetModel> implemen
 
         mPresenter.getModel(url);
 
+        fragmentManager = getFragmentManager();
+
+        tabLayout1 = (TabLayout) view.findViewById(R.id.zblive_tab);
+        pager1 = (ViewPager) view.findViewById(R.id.zblive_pager);
+
         mImageView = (ImageView) view.findViewById(R.id.xmzb_zb_st);
         mTextView = (TextView) view.findViewById(R.id.xmzb_zb_bt);
         mXy = (TextView) view.findViewById(R.id.xmzb_xy);
         checkBox = (CheckBox) view.findViewById(R.id.xmzb_zb_sx);
+        checkBox.setButtonDrawable(R.drawable.live_china_detail_down);
+
+
         checkBox.setOnCheckedChangeListener(new CompoundButton.OnCheckedChangeListener() {
             @Override
             public void onCheckedChanged(CompoundButton buttonView, boolean isChecked) {
@@ -70,6 +89,38 @@ public class ZhiBoFragment extends BaseFragment<NetPresenter, NetModel> implemen
         mTextView.setText(live.get(0).getTitle());
         mXy.setText(live.get(0).getBrief());
         Glide.with(getActivity()).load(live.get(0).getImage()).into(mImageView);
+
+
+        List<Xmzb_ZbBean.BookmarkBean.MultipleBean> multiple = xmzb_zbBean.getBookmark().getMultiple();
+        List<Xmzb_ZbBean.BookmarkBean.WatchTalkBean> watchTalk = xmzb_zbBean.getBookmark().getWatchTalk();
+
+
+
+
+
+        if (boo) {
+
+
+            list.add(multiple.get(0).getTitle());
+            list.add(watchTalk.get(0).getTitle());
+
+            Xmzb_DuoFragment xmzb_duoFragment = new Xmzb_DuoFragment();
+            Bundle bundle=new Bundle();
+            String url = multiple.get(0).getUrl();
+            bundle.putString("url",url);
+            xmzb_duoFragment.setArguments(bundle);
+
+            mlist.add(xmzb_duoFragment);
+            mlist.add(new Xmzb_BianFragment());
+
+
+            boo = false;
+        }
+
+
+        PagerAdapter mAdapetr = new PagerAdapter(fragmentManager, list, mlist);
+        pager1.setAdapter(mAdapetr);
+        tabLayout1.setupWithViewPager(pager1);
 
     }
 }
